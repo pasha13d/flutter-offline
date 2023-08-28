@@ -17,6 +17,7 @@ dependencies:
   stack_trace: ^1.11.0
   path: ^1.8.2
   ussd_advanced: ^1.1.0
+  flutter_bloc: ^8.0.1
 
 dev_dependencies:
   flutter_test:

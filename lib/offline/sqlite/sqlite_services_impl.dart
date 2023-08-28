@@ -1,3 +1,5 @@
+import 'package:temp_offline/offline/sqlite/sqlite_service_util.dart';
+
 import '../../models/users_model.dart';
 import '../sqlite_models/sqlite_model.dart';
 import 'sqlite_db.dart';
@@ -6,10 +8,10 @@ import 'sqlite_services.dart';
 
 class SqliteServicesImpl extends SqliteServices {
   @override
-  Future<List<Users>> saveUser() async {
+  Future<int> saveUser(Users data) async {
     await _createTable(Tables.Users.name, DBQueries.createUsers);
 
-    bool tableExist = await SqliteDB.tableExist(Tables.Users.name);
+    final tableExist = await SqliteDB.tableExist(Tables.Users.name);
     if (!tableExist) {
       /// create table first
       await SqliteDB.executeRawQuery(DBQueries.createUsers);
@@ -17,16 +19,27 @@ class SqliteServicesImpl extends SqliteServices {
       await SqliteDB.executeRawQuery('INSERT INTO Users (name, address) VALUES ("Pasha", "Savar"), ("Zarif", "Gaibandha")');
     }
 
-    var responseJson = await SqliteDB.getAllByTableName(Tables.Users.name);
-    List<Users> usersList = List<Users>.from(responseJson.map((x) => Users.fromJson(x)));
+    var map = SqliteServicesUtil.usersToMap(data);
+    int result = await SqliteDB.insertData(Tables.Users.name, map);
 
-    return usersList;
+    return result;
+  }
+
+  @override
+  Future<int> updateUser(Users data) async {
+    var map = SqliteServicesUtil.usersToMap(data);
+    map['oid'] = data.oid;
+
+    int result = await SqliteDB.updateData(Tables.Users.name, map);
+
+    return result;
   }
 
   @override
   Future<List<Users>> getUsersList() async {
     var responseJson = await SqliteDB.getListBySQL(_getSQL(Tables.Users.name));
     List<Users> dataList = List<Users>.from(responseJson.map((x) => Users.fromJson(x)));
+
     return dataList;
   }
 
